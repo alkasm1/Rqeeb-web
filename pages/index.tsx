@@ -1,40 +1,63 @@
-import Head from 'next/head';
-import Link from 'next/link';
+import React from "react";
+import Head from "next/head";
+import { useRouter } from "next/router";
 
-export default function HomePage() {
+export default function Home() {
+  const router = useRouter();
+  const isArabic = router.locale === "ar";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <>
       <Head>
-        <title>Rqeeb - كشف التزوير البصري</title>
+        <title>رقيب | RQEEB - كشف التزوير الذكي</title>
+        <meta name="description" content="أداة ذكية لمقارنة الصور وكشف التزوير بدقة عالية" />
       </Head>
 
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <div className="text-xl font-bold text-indigo-600">Rqeeb</div>
-          <nav>
-            <Link href="/pricing" className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-              الاشتراك المميز
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <main style={{
+        fontFamily: "Arial, sans-serif",
+        padding: "2rem",
+        textAlign: "center",
+        backgroundColor: "#111",
+        color: "#fff",
+        minHeight: "100vh",
+        direction: isArabic ? "rtl" : "ltr"
+      }}>
+        <h1 style={{ fontSize: "3rem", marginBottom: "1rem" }}>
+          {isArabic ? "رقيب لكشف التزوير" : "RQEEB - Fraud Detection"}
+        </h1>
 
-      <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
-            الحل الأمثل للكشف عن التزوير البصري
-          </h1>
-          <p className="mt-6 max-w-lg mx-auto text-xl text-gray-500">
-            تقنية متقدمة للتحقق من صحة الوثائق والصور في ثوانٍ
+        <p style={{ fontSize: "1.2rem", marginBottom: "2rem" }}>
+          {isArabic
+            ? "قارن بين الصور أو المستندات أو العملات أو اللوحات الفنية لكشف التزوير بدقة عالية"
+            : "Compare documents, currency, or artwork to detect forgery accurately."}
+        </p>
+
+        <button
+          style={{
+            backgroundColor: "#ff8800",
+            border: "none",
+            padding: "1rem 2rem",
+            fontSize: "1rem",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
+          onClick={() => window.location.href = "/check.html"}
+        >
+          {isArabic ? "ابدأ الآن" : "Start Now"}
+        </button>
+
+        <footer style={{ marginTop: "4rem", fontSize: "0.9rem", opacity: 0.7 }}>
+          <p>
+            {isArabic ? "تم التطوير بواسطة رأفت عمر" : "Developed by Raafat Omar"}
           </p>
-        </div>
-
-        <div className="mt-10 flex justify-center">
-          <Link href="/analyze" className="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
-            ابدأ التحليل الآن
-          </Link>
-        </div>
+          <p>
+            📧 <a href="mailto:shamwebs1@gmail.com" style={{ color: "#ff8800" }}>shamwebs1@gmail.com</a>
+          </p>
+          <p>
+            🔗 <a href="https://www.facebook.com/profile.php?id=61578212474377" target="_blank" rel="noreferrer" style={{ color: "#ff8800" }}>صفحتنا على فيسبوك</a>
+          </p>
+        </footer>
       </main>
-    </div>
+    </>
   );
 }
