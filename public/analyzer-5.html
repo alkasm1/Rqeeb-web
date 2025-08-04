@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>RQEEB | كشف التزوير البصري</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { background:#111; color:#ffa500; font-family:'Tajawal',sans-serif; text-align:center; padding:2rem; }
+    .card { background:#1e1e1e; padding:1rem; margin:1rem auto; border-radius:12px; max-width:480px; box-shadow:0 0 10px #000; }
+    input[type="file"], button { width:100%; padding:0.8rem; margin-top:10px; font-size:1rem; border-radius:8px; border:none; }
+    button { background:#ffa500; color:#000; cursor:pointer; }
+    button:hover { background:#e69500; }
+    #results { margin-top:20px; font-size:1.1rem; text-align:right; color:#fff; }
+    progress { width:100%; margin-top:10px; }
+    footer { margin-top:30px; font-size:0.9em; color:#777; }
+  </style>
+</head>
+<body>
+
+  <h1>🔬 RQEEB — تحليل متقدم للتزوير</h1>
+
+  <div class="card">
+    <h3>📁 اختيار الأصل</h3>
+    <input type="file" accept="image/*" id="originalFile">
+    <h3>📷 تصوير الأصل</h3>
+    <input type="file" accept="image/*" capture="environment" id="originalCam">
+  </div>
+
+  <div class="card">
+    <h3>📁 اختيار التحقق</h3>
+    <input type="file" accept="image/*" id="checkFile">
+    <h3>📷 تصوير التحقق</h3>
+    <input type="file" accept="image/*" capture="environment" id="checkCam">
+  </div>
+
+  <div class="card">
+    <button onclick="startFullAnalysis()">🧪 بدء التحليل المركزي</button>
+    <div id="results">👁️ بانتظار الملفات...</div>
+    <progress id="progressBar" value="0" max="100"></progress>
+  </div>
+
+  <footer>م: رأفت عمر — RQEEB Project © 2025</footer>
+
+<script>
+function extractCentralRegion(img, scale = 0.5) {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const w = img.width, h = img.height;
+  const rw = w * scale, rh = h * scale;
+  const x = (w - rw) / 2, y = (h - rh) / 2;
+  canvas.width = rw;
+  canvas.height = rh;
+  ctx.drawImage(img, x, y, rw, rh, 0, 0, rw, rh);
+  return canvas;
+}
+
+function loadImage(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.src = reader.result;
+      img.onload = () => res(img);
+      img.onerror = rej;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function analyzeSobel(canvas) {
+  const ctx = canvas.getContext("2d");
+  const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  let sum = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    const gray = (d[i] + d[i+1] + d[i+2]) / 3;
+    sum += gray;
+  }
+  const avg = sum / (d.length / 4);
+  const dev = Math.sqrt(d.reduce((acc, val, i) => {
+    if (i % 4 === 0) {
+      const gray = (d[i] + d[i+1] + d[i+2]) / 3;
+      return acc + Math.pow(gray - avg, 2);
+    }
+    return acc;
+  }, 0) / (d.length / 4));
+  return { avg, dev };
+}
+
+function getDominantColor(canvas) {
+  const ctx = canvas.getContext("2d");
+  const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  let r=0, g=0, b=0, count=0;
+  for (let i = 0; i < d.length; i += 4) {
+    r += d[i]; g += d[i+1]; b += d[i+2]; count++;
+  }
+  return {
+    r: Math.floor(r / count),
+    g: Math.floor(g / count),
+    b: Math.floor(b / count)
+  };
+}
+
+async function startFullAnalysis() {
+  const img1File = document.getElementById('originalCam').files[0]
+    || document.getElementById('originalFile').files[0];
+  const img2File = document.getElementById('checkCam').files[0]
+    || document.getElementById('checkFile').files[0];
+
+  const resultBox = document.getElementById("results");
+  const bar = document.getElementById("progressBar");
+
+  if (!img1File || !img2File) {
+    resultBox.innerHTML = "⚠️ الرجاء اختيار أو تصوير كلا الصورتين أولًا.";
+    return;
+  }
+
+  resultBox.innerHTML = "⏳ جاري التحليل...";
+
+  try {
+    const img1 = await loadImage(img1File);
+    const img2 = await loadImage(img2File);
+    const region1 = extractCentralRegion(img1);
+    const region2 = extractCentralRegion(img2);
+
+    const texture1 = analyzeSobel(region1);
+    const texture2 = analyzeSobel(region2);
+    const textureDiff = Math.abs(texture1.avg - texture2.avg) + Math.abs(texture1.dev - texture2.dev);
+
+    const color1 = getDominantColor(region1);
+    const color2 = getDominantColor(region2);
+    const colorMatch = Math.abs(color1.r - color2.r) + Math.abs(color1.g - color2.g) + Math.abs(color1.b - color2.b);
+
+    const score = 100 - Math.min((textureDiff + colorMatch/3), 100);
+    bar.value = score;
+
+    resultBox.innerHTML = `
+      <h3>📊 النتائج المركزية:</h3>
+      <ul>
+        <li>🧵 تحليل النسيج: فرق ${textureDiff.toFixed(2)}</li>
+        <li>🎨 اللون السائد: فرق ${colorMatch.toFixed(1)}</li>
+        <li><strong>📈 درجة التطابق:</strong> ${score.toFixed(1)}%</li>
+      </ul>
+      ${score >= 90 ? "✅ تطابق تام — الوثيقة سليمة." :
+        score >= 70 ? "⚠️ تطابق جزئي — تحقق يدوي موصى به." :
+        "❌ تطابق منخفض — تزوير محتمل."}
+    `;
+  } catch {
+    resultBox.innerHTML = "❌ فشل التحليل — تأكد من وضوح الصور.";
+  }
+}
+</script>
+
+</body>
+</html>
