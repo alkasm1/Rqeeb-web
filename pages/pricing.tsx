@@ -1,25 +1,34 @@
-import Link from "next/link";
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import CheckoutForm from '../components/CheckoutForm';
+import Head from 'next/head';
 
-export default function Pricing() {
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+
+export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-white p-8">
-      <h2 className="text-3xl font-bold text-center mb-6">الباقات</h2>
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        <div className="border rounded-2xl p-6 shadow">
-          <h3 className="text-xl font-bold mb-2">مجانية</h3>
-          <p className="text-gray-500 mb-4">فحص محدود يوميًا بدون تسجيل</p>
-          <Link href="/analyze" className="bg-gray-200 px-4 py-2 rounded-xl">
-            ابدأ مجانًا
-          </Link>
-        </div>
-        <div className="border rounded-2xl p-6 shadow">
-          <h3 className="text-xl font-bold mb-2">احترافية – $4.99</h3>
-          <p className="text-gray-500 mb-4">تحليل غير محدود، دعم خاص، أرشفة</p>
-          <form action="/api/checkout" method="POST">
-            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-xl">
-              اشترك الآن
-            </button>
-          </form>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Head>
+        <title>خطط التسعير - Rqeeb</title>
+      </Head>
+      
+      <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+        <div className="p-8">
+          <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">Rqeeb Pro</div>
+          <h2 className="block mt-1 text-lg leading-tight font-medium text-black">الاشتراك الشهري</h2>
+          <p className="mt-2 text-gray-500">
+            احصل على وصول كامل لجميع ميزات التحقق المتقدمة
+          </p>
+          <div className="mt-4">
+            <span className="text-4xl font-bold text-gray-900">$4.99</span>
+            <span className="text-gray-600"> /شهر</span>
+          </div>
+          
+          <div className="mt-6">
+            <Elements stripe={stripePromise}>
+              <CheckoutForm />
+            </Elements>
+          </div>
         </div>
       </div>
     </div>
