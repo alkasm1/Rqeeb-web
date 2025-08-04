@@ -1,4 +1,4 @@
-
 engine-strict = true
 strict-peer-dependencies = false
 legacy-peer-deps = true
+ignore-scripts = true
