@@ -1,8 +1,9 @@
+// pages/api/checkout.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2022-11-15",
+  apiVersion: "2023-10-16",
 });
 
 export default async function handler(
@@ -18,9 +19,9 @@ export default async function handler(
             price_data: {
               currency: "usd",
               product_data: {
-                name: "Premium Subscription",
+                name: "اشتراك Rqeeb المميز",
               },
-              unit_amount: 1000, // السعر بالسنت = 10 دولار
+              unit_amount: 499,
               recurring: {
                 interval: "month",
               },
@@ -30,18 +31,21 @@ export default async function handler(
         ],
         mode: "subscription",
         subscription_data: {
-          trial_period_days: 7, // ✅ تم وضعها هنا بشكل صحيح
+          trial_period_days: 7,
         },
-        success_url: `${req.headers.origin}/success`,
+        success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${req.headers.origin}/pricing`,
       });
 
       res.status(200).json({ url: session.url });
     } catch (err: any) {
-      res.status(500).json({ statusCode: 500, message: err.message });
+      res.status(500).json({ 
+        statusCode: 500, 
+        message: err.message || "خطأ في إنشاء جلسة الدفع" 
+      });
     }
   } else {
-    res.setHeader("Allow", "POST");
-    res.status(405).end("Method Not Allowed");
+    res.setHeader("Allow", ["POST"]);
+    res.status(405).end("الطريقة غير مسموحة");
   }
 }
