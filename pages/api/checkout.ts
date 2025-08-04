@@ -37,6 +37,7 @@ export default async function handler(
         cancel_url: `${req.headers.origin}/pricing`,
       });
 
+      // تأكد من إرجاع url وليس id
       res.status(200).json({ url: session.url });
     } catch (err: any) {
       res.status(500).json({ 
